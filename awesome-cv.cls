@@ -88,6 +88,8 @@
   pdfsubject={},
   pdfkeywords={}
 }
+% Needed for beauty
+\RequirePackage{nth}
 
 %-------------------------------------------------------------------------------
 %                Configuration for layout
