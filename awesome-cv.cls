@@ -571,6 +571,21 @@
   \end{tabular*}%
 }
 
+% Define an entry of cv information
+% Usage: \cvdateentry{<title>}{<employer>}{<date>}{<description>}
+\newcommand*{\cvdateentry}[4]{%
+  \vspace{-2.0mm}
+  \setlength\tabcolsep{0pt}
+  \setlength{\extrarowheight}{0pt}
+  \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} L{1.5cm} L{\textwidth - 1.5cm}}
+    \ifempty{#1#3}{}
+    {\entrydatestyle{#3} & \entrytitlestyle{#1}\\}
+    \ifempty{#2}{}
+    { & \entrypositionstyle{#2}}\\
+     & \descriptionstyle{#4}
+  \end{tabular*}%
+}
+
 % Define an environment for cvsubentry
 \newenvironment{cvsubentries}{%
   \begin{center}
