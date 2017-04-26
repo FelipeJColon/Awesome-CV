@@ -538,7 +538,7 @@
 \newcommand{\cvsection}[1]{%
   \vspace{\acvSectionTopSkip}
   \sectionstyle{#1}
-  \phantomsection
+  \phantomsection%
   \color{gray}\vhrulefill{0.9pt}
 }
 
@@ -548,14 +548,14 @@
   \vspace{\acvSectionContentTopSkip}
   \vspace{-3mm}
   \subsectionstyle{#1}
-  \phantomsection
+  \phantomsection%
 }
 
 % Define a paragraph for CV
 \newenvironment{cvparagraph}{%
   \vspace{\acvSectionContentTopSkip}
   \vspace{-3mm}
-  \paragraphstyle
+  \paragraphstyle%
 }{%
   \par
   \vspace{2mm}
