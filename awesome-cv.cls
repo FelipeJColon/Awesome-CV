@@ -47,7 +47,7 @@
 %                3rd party packages
 %-------------------------------------------------------------------------------
 % Needed to make fixed length table
-\RequirePackage{array}
+\RequirePackage{tabularx}
 % Needed to handle list environment
 \RequirePackage{enumitem}
 % Needed to handle text alignment
