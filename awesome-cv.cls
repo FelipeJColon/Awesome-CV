@@ -88,6 +88,10 @@
   pdfsubject={},
   pdfkeywords={}
 }
+% Needed to remove asterisks from names in bibliography
+\RequirePackage{xstring}
+% Needed for reverse bibliography numbering
+\RequirePackage{etaremune}
 % Needed for beauty
 \RequirePackage{nth}
 
@@ -752,9 +756,8 @@
 %                Bibliography
 %-------------------------------------------------------------------------------
 \RequirePackage[ % BibLaTeX
-	sorting=ydnt, % Sorts entries by year (descending order), name, title
-	style=verbose,
-	doi=false,
+	style=numeric,
+	doi=true,
 	isbn=true,
 	url=false,
 	eprint=false,
@@ -763,8 +766,58 @@
 	maxbibnames=99, % affects only the bibliography, pass 99 to print all
 	hyperref=true,
 	block=none,
+  defernumbers=true,
 	backend=biber % {Options: bibtex, biber}
 	]{biblatex}
+
+\DeclareSortingScheme{ddatent}{
+  \sort{
+    \field{presort}
+  }
+  \sort[final]{
+    \field{sortkey}
+  }
+  \sort[direction=descending]{
+    \field[strside=left,strwidth=4]{sortyear}
+    \field[strside=left,strwidth=4]{year}
+    \literal{9999}
+  }
+  \sort[direction=descending]{
+    \field[padside=left,padwidth=2,padchar=0]{month}
+    \literal{00}
+  }
+  \sort[direction=descending]{
+    \field[padside=left,padwidth=2,padchar=0]{day}
+    \literal{00}
+  }
+  \sort[direction=descending]{
+    \field[padside=left,padwidth=4,padchar=0]{volume}
+    \literal{9999}
+  }
+  \sort{
+    \field{sortname}
+    \field{author}
+    \field{editor}
+    \field{translator}
+    \field{sorttitle}
+    \field{title}
+  }
+  \sort{
+    \field{sorttitle}
+    \field{title}
+  }
+}
+
+\AtEveryBibitem{\clearlist{language}} % clears language
+\AtEveryBibitem{\clearfield{eprint}} % clears eprint
+\AtEveryBibitem{\clearfield{series}} % clears series
+\AtEveryBibitem{\clearfield{issue}} % clears volume
+\AtEveryBibitem{\clearfield{month}} % clears volume
+\AtEveryBibitem{\clearfield{publisher}} % clears volume
+\DeclareFieldFormat[article, inbook, incollection, inproceedings, patent, thesis, unpublished]{pages}{{\nopp#1}} %removes ‘pp.’ from pages
+\renewbibmacro{in:}{%
+  \ifentrytype{article}{}{%
+  \printtext{\bibstring{in}\intitlepunct}}}
 
 % Avoid splitting entries across page break (only for 3 or fewer lines)
 % Tip: http://tex.stackexchange.com/a/51261
@@ -774,6 +827,37 @@
    \widowpenalty10000
    \interlinepenalty5000}
 
+ % highlight myself
+ % https://tex.stackexchange.com/questions/73136/make-specific-author-bold-using-biblatex#comment835698_334333
+\def\makenamesetup{%
+  \def\bibnamedelima{~}%
+  \def\bibnamedelimb{ }%
+  \def\bibnamedelimc{ }%
+  \def\bibnamedelimd{ }%
+  \def\bibnamedelimi{ }%
+  \def\bibinitperiod{.}%
+  \def\bibinitdelim{~}%
+  \def\bibinithyphendelim{.-}}
+\newcommand*{\makename}[2]{\begingroup\makenamesetup\xdef#1{#2}\endgroup}
+
+\newcommand*{\boldname}[3]{%
+  \def\biblastname{#1}%
+  \def\bibfirstname{#2}%
+  \def\bibfirstinit{#3}}
+\boldname{}{}{}
+
+\renewcommand{\mkbibnamegiven}[1]{%
+  \StrDel{\namepartfamily}{*}[\temp]%
+  \ifboolexpr{ ( test {\ifdefequal{\bibfirstname}{\namepartgiven}} or test {\ifdefequal{\bibfirstinit}{\namepartgiven}} ) and test {\ifdefequal{\biblastname}{\temp}} }
+  {\bodyfont#1\bodyfontlight}{#1}%
+}
+
+\renewcommand{\mkbibnamefamily}[1]{%
+  \StrDel{\namepartfamily}{*}[\temp]%
+  \ifboolexpr{ ( test {\ifdefequal{\bibfirstname}{\namepartgiven}} or test {\ifdefequal{\bibfirstinit}{\namepartgiven}} ) and test {\ifdefequal{\biblastname}{\temp}} }
+  {\bodyfont#1\bodyfontlight}{#1}%
+}
+
 % Customized format, based on Fancy CV template created by Adrien Friggeri
 \DeclareFieldFormat[article]{title}{#1\par}
 \DeclareFieldFormat[inproceedings]{title}{#1\par}
@@ -782,9 +866,11 @@
 \DeclareFieldFormat[incollection]{title}{#1\par}
 
 \DeclareBibliographyDriver{article}{%
+  \usebibmacro{begentry}
   \fontsize{9pt}{1em}\bodyfont%
   \printfield{title}%
   \newblock%
+  \fontsize{9pt}{1em}\bodyfont\color{graytext}%
   \printnames{author}%
   \par%
   \newblock%
@@ -792,20 +878,19 @@
     \fontsize{8pt}{1em}\bodyfontlight\color{graytext}%
     \usebibmacro{journal+issuetitle}%
     \setunit{\space}%
-    \printfield{pages}%
-    \newunit%
-    \printlist{publisher}%
-    \setunit*{\addcomma\space}%
-    \printfield{year}%
-    \newunit%
+    \usebibmacro{note+pages}%
+    \adddot
   }
-  \par\vspace{0.3\baselineskip}
+  \usebibmacro{finentry}
+ \par\vspace{0.3\baselineskip}
 }
 
 \DeclareBibliographyDriver{inproceedings}{%
+  \usebibmacro{begentry}
   \fontsize{9pt}{1em}\bodyfont%
   \printfield{title}%
   \newblock%
+  \fontsize{9pt}{1em}\bodyfont\color{graytext}%
   \printnames{author}%
   \par%
   \newblock%
@@ -816,15 +901,18 @@
     \printfield{year}%
     \setunit{\addcomma\space}%
     \printlist{location}%
-    \newunit%
+    \adddot%
   }
+  \usebibmacro{finentry}
   \par\vspace{0.3\baselineskip}
 }
 
 \DeclareBibliographyDriver{incollection}{%
+  \usebibmacro{begentry}
   \fontsize{9pt}{1em}\bodyfont%
   \printfield{title}%
   \newblock%
+  \fontsize{9pt}{1em}\bodyfont\color{graytext}%
   \printnames{author}%
   \par%
   \newblock%
@@ -834,16 +922,19 @@
     \setunit{\addcomma\space}%
     \printfield{year}%
     \setunit{\addcomma\space}%
-    \printlist{location}%
-    \newunit%
+    \printfield{publisher}%
+    \adddot%
   }
+  \usebibmacro{finentry}
   \par\vspace{0.3\baselineskip}
 }
 
 \DeclareBibliographyDriver{misc}{%
+  \usebibmacro{begentry}
   \fontsize{9pt}{1em}\bodyfont%
   \printfield{title}%
   \newblock%
+  \fontsize{9pt}{1em}\bodyfont\color{graytext}%
   \printnames{author}%
   \par%
   \newblock%
@@ -856,15 +947,18 @@
     \printfield{year}%
     \setunit{\addcomma\space}%
     \printlist{location}%
-    \newunit%
+    \adddot%
   }
+  \usebibmacro{finentry}
   \par\vspace{0.3\baselineskip}
 }
 
 \DeclareBibliographyDriver{report}{%
+  \usebibmacro{begentry}
   \fontsize{9pt}{1em}\bodyfont%
   \printfield{title}%
   \newblock%
+  \fontsize{9pt}{1em}\bodyfont\color{graytext}%
   \printnames{author}%
   \par%
   \newblock%
@@ -875,22 +969,35 @@
     \printfield{number}%
     \setunit{\addcomma\space}%
     \printfield{year}%
-    \newunit%
+    \adddot%
   }
+  \usebibmacro{finentry}
   \par\vspace{0.3\baselineskip}
 }
 
 % New syntax for flexible backend (BibLaTeX > v3.3)
 \DeclareNameFormat{author}{%
-  \fontsize{9pt}{1em}\bodyfont%
+  \fontsize{8pt}{1em}\bodyfontlight\color{graytext}%
   \renewcommand*{\multinamedelim}{\addcomma\addspace}%
   \nameparts{#1}%
   \ifthenelse{\value{listcount}=1}
-    {\ifblank{\namepartgiven}{}{\namepartgiven\space}%
-    \namepartfamily}%
-    {\ifblank{\namepartgiven}{}{\namepartgiven\space}%
-    \namepartfamily}%
+  {\ifblank{\namepartgiveni}{}{\mkbibnamegiven{\namepartgiveni}\space}%
+    \mkbibnamefamily{\namepartfamily}}%
+  {\ifblank{\namepartgiveni}{}{\mkbibnamegiven{\namepartgiveni}\space}%
+    \mkbibnamefamily{\namepartfamily}}%
   \ifthenelse{\value{listcount}<\value{liststop}}
   {\addcomma\space}
-  {}
+  {\ifthenelse{\ifmorenames}{~et\,al\adddot}{}}
 }
+
+\defbibenvironment{bibliography}
+  {\renewcommand\labelenumi{\fontsize{8pt}{1em}\bodyfontlight\color{graytext}\printfield{labelprefix}\theenumi}
+   \begin{etaremune}[itemsep=0pt,topsep=0pt,partopsep=0pt,parsep=0pt]}
+  {\end{etaremune}}
+  {\item}
+
+\DeclareFieldFormat{labelnumberwidth}{\fontsize{8pt}{1em}\bodyfontlight\color{graytext}#1}
+\setlength{\labelnumberwidth}{\widthof{[10]}}
+
+\renewbibmacro{begentry}{\begin{minipage}[t]{\linewidth}}
+\renewbibmacro{finentry}{\finentry\end{minipage}}
