@@ -208,6 +208,11 @@
 \newcommand*{\honordatestyle}[1]{{\fontsize{8pt}{1em}\bodyfontlight\slshape\color{text} #1}}
 \newcommand*{\honorlocationstyle}[1]{{\fontsize{9pt}{1em}\bodyfontlight\slshape\color{awesome} #1}}
 
+% For elements of grant
+\newcommand*{\granttitlestyle}[1]{{\fontsize{9pt}{1em}\bodyfont\upshape\color{darktext} #1}}
+\newcommand*{\granttypestyle}[1]{{\fontsize{9pt}{1em}\bodyfontlight\upshape\color{text} #1}}
+\newcommand*{\grantdatestyle}[1]{{\fontsize{8pt}{1em}\bodyfontlight\slshape\color{text} #1}}
+
 % For elements of skill
 \newcommand*{\skilltypestyle}[1]{{\fontsize{9pt}{1em}\bodyfont\upshape\color{darktext} #1}}
 \newcommand*{\skillsetstyle}[1]{{\fontsize{9pt}{1em}\bodyfontlight\color{text} #1}}
@@ -606,6 +611,21 @@
 % Usage: \cvhonor{<position>}{<title>}{<location>}{<date>}
 \newcommand*{\cvhonor}[4]{%
   \honordatestyle{#4} & \honorpositionstyle{#1}, \honortitlestyle{#2} & \honorlocationstyle{#3} \\
+% Define an environment for cvgrant
+\newenvironment{cvgrants}{%
+  \vspace{\acvSectionContentTopSkip}
+  \vspace{-2mm}
+  \setlength\tabcolsep{1ex}
+  \setlength{\extrarowheight}{0pt}
+  \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} L{1.5cm} L{\textwidth - 1.5cm}}
+}{%
+  \end{tabular*}\par
+}
+% Define a line of cv information (grant)
+% Usage: \cvgrant{<title>}{<type>}{<date>}
+\newcommand*{\cvgrant}[3]{%
+  \grantdatestyle{#3} &
+  \ifthenelse{\isempty{#1}}{}{\granttitlestyle{#1.}}\ifthenelse{\isempty{#1} \OR \isempty{#2}}{}{ \\ & }\ifthenelse{\isempty{#2}}{}{\granttypestyle{#2.}}\\
 }
 
 % Define an environment for cvskill
